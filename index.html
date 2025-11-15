@@ -195,7 +195,7 @@
             { paraula: "gòtica", tipus: "esdrúixola", tonica: "gò" },
             { paraula: "mèdica", tipus: "esdrúixola", tonica: "mè" },
             { paraula: "cèl·lula", tipus: "esdrúixola", tonica: "cèl" },
-            { paraula: "pròfuga", tipus: "esdrúixola", tonica: "prò" }
+            { paraula: "minúscula", tipus: "esdrúixola", tonica: "nús" }
         ];
 
         // Estat del joc
@@ -207,7 +207,7 @@
         var intervalTemps = null;
         var haGuanyat = false;
 
-        var TEMPS_INICIAL = 10;        // segons
+        var TEMPS_INICIAL = 20;        // segons
         var VIDES_INICIALS = 3;
         var PUNTUACIO_OBJECTIU = 1000;
 
@@ -274,7 +274,7 @@
         }
 
         function actualitzarTemps() {
-            tempsRestant -= 0.1;
+            tempsRestant -= 0.05;
             var percentatge = (tempsRestant / TEMPS_INICIAL) * 100;
             if (percentatge < 0) {
                 percentatge = 0;
