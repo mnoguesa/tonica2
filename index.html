@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursa d'Accents</title>
-    <!-- Carreguem Tailwind CSS -->
+    <title>Cursa d'accents</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tipografia Inter per defecte */
         body {
             font-family: "Inter", sans-serif;
-            overflow: hidden; /* Evita scroll en mòbils */
+            overflow: hidden;
         }
-        /* Animació per la barra de temps */
         #barra-temps-progres {
             transition: width 0.1s linear;
         }
-        /* Efecte de "shake" per error */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -25,11 +22,10 @@
         .shake-error {
             animation: shake 0.5s ease-in-out;
         }
-        /* Efecte de "flash" per correcte */
         @keyframes flash-correct {
-            0% { background-color: #ecfdf5; } /* green-50 */
-            50% { background-color: #d1fae5; } /* green-200 */
-            100% { background-color: #ecfdf5; } /* green-50 */
+            0% { background-color: #ecfdf5; }
+            50% { background-color: #d1fae5; }
+            100% { background-color: #ecfdf5; }
         }
         .flash-correct {
             animation: flash-correct 0.5s ease-in-out;
@@ -38,21 +34,21 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <!-- Contingut principal del joc -->
+    <!-- Joc -->
     <div id="game-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-md relative">
         
-        <!-- Marcador (Puntuació i Vides) -->
+        <!-- Marcador -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <span class="text-lg font-semibold text-gray-600">Puntuació</span>
                 <span id="puntuacio" class="text-2xl font-bold text-blue-700 ml-2">0</span>
             </div>
             <div id="vides-container" class="flex gap-2">
-                <!-- Les vides (cors) s'afegiran aquí amb JS -->
+                <!-- Cors -->
             </div>
         </div>
 
-        <!-- Contenidor de la paraula (amb feedback visual) -->
+        <!-- Paraula -->
         <div id="paraula-container" class="bg-blue-50 text-blue-800 text-5xl font-bold p-6 rounded-lg mb-6 text-center tracking-wider">
             <!-- La paraula apareixerà aquí -->
         </div>
@@ -62,7 +58,7 @@
             <div id="barra-temps-progres" class="bg-green-500 h-4 rounded-full" style="width: 100%;"></div>
         </div>
 
-        <!-- Botons d'opcions -->
+        <!-- Botons -->
         <div class="grid grid-cols-3 gap-3">
             <button id="aguda-btn" class="game-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Aguda
@@ -75,12 +71,15 @@
             </button>
         </div>
 
+        <p class="mt-4 text-xs text-gray-400 text-center">
+            Versió 2.0 – si veus això, tens el codi nou.
+        </p>
     </div>
 
-    <!-- Modal de Game Over (inicialment ocult) -->
+    <!-- Modal Game Over -->
     <div id="game-over-modal" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-xl shadow-2xl p-8 md:p-12 w-full max-w-md text-center">
-            <h2 class="text-4xl font-bold text-red-600 mb-4">S'ha acabat!</h2>
+            <h2 id="game-over-title" class="text-4xl font-bold text-red-600 mb-4">S'ha acabat!</h2>
             <p class="text-xl text-gray-700 mb-6">La teva puntuació final és:</p>
             <span id="puntuacio-final" class="text-7xl font-bold text-blue-700 mb-8 block">0</span>
             <button id="restart-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 text-lg">
@@ -89,104 +88,233 @@
         </div>
     </div>
 
-
     <script>
-        // Llista de paraules CUIDADOSAMENT seleccionades sense diftongs ni hiats.
-        // { paraula: "text", tipus: "aguda/plana/esdrúixola", tonica: "síl·laba tònica" }
-        const BANC_DE_PARAULES = [
-            // Planes (sense accent)
-            { paraula: "casa", tipus: "plana", tonica: "ca" },
-            { paraula: "mesa", tipus: "plana", tonica: "me" },
-            { paraula: "taca", tipus: "plana", tonica: "ta" },
-            { paraula: "cotxe", tipus: "plana", tonica: "cot" },
-            { paraula: "data", tipus: "plana", tonica: "da" },
-            { paraula: "bonica", tipus: "plana", tonica: "ni" },
-            { paraula: "sistema", tipus: "plana", tonica: "te" },
-            { paraula: "problema", tipus: "plana", tonica: "ble" },
-            { paraula: "llarga", tipus: "plana", tonica: "llar" },
-            { paraula: "finestra", tipus: "plana", tonica: "nes" },
-            { paraula: "pastanaga", tipus: "plana", tonica: "na" },
-            { paraula: "tomàquet", tipus: "plana", tonica: "mà" },
+        // BANC DE PARAULES
+        var BANC_DE_PARAULES = [
+            // Planes
+            { paraula: "porta",   tipus: "plana",     tonica: "por" },
+            { paraula: "terra",   tipus: "plana",     tonica: "ter" },
+            { paraula: "nina",    tipus: "plana",     tonica: "ni" },
+            { paraula: "cadira",  tipus: "plana",     tonica: "di" },
+            { paraula: "galeta",  tipus: "plana",     tonica: "le" },
+            { paraula: "sabata",  tipus: "plana",     tonica: "ba" },
+            { paraula: "llimona", tipus: "plana",     tonica: "mo" },
+            { paraula: "mantega", tipus: "plana",     tonica: "te" },
+            { paraula: "oficina", tipus: "plana",     tonica: "ci" },
+            { paraula: "camisa",  tipus: "plana",     tonica: "mi" },
 
-            // Agudes (sense accent)
-            { paraula: "paper", tipus: "aguda", tonica: "per" },
-            { paraula: "color", tipus: "aguda", tonica: "lor" },
-            { paraula: "calor", tipus: "aguda", tonica: "lor" },
-            { paraula: "valor", tipus: "aguda", tonica: "lor" },
-            { paraula: "motor", tipus: "aguda", tonica: "tor" },
-            { paraula: "camall", tipus: "aguda", tonica: "mall" },
-            { paraula: "cantar", tipus: "aguda", tonica: "tar" },
-            { paraula: "penjar", tipus: "aguda", tonica: "jar" },
-            { paraula: "treball", tipus: "aguda", tonica: "ball" },
+            // Agudes
+            { paraula: "carn",    tipus: "aguda",     tonica: "carn" },
+            { paraula: "flor",    tipus: "aguda",     tonica: "flor" },
+            { paraula: "pintor",  tipus: "aguda",     tonica: "tor" },
+            { paraula: "hotel",   tipus: "aguda",     tonica: "tel" },
+            { paraula: "carrer",  tipus: "aguda",     tonica: "rer" },
+            { paraula: "ciutat",  tipus: "aguda",     tonica: "tat" },
+            { paraula: "germà",   tipus: "aguda",     tonica: "mà" },
+            { paraula: "coixí",   tipus: "aguda",     tonica: "xí" },
+            { paraula: "cafè",    tipus: "aguda",     tonica: "fè" },
+            { paraula: "pantaló", tipus: "aguda",     tonica: "ló" },
 
-            // Agudes (amb accent)
-            { paraula: "camí", tipus: "aguda", tonica: "mí" },
-            { paraula: "sofà", tipus: "aguda", tonica: "fà" },
-            { paraula: "carbó", tipus: "aguda", tonica: "bó" },
-            { paraula: "matí", tipus: "aguda", tonica: "tí" },
-            { paraula: "betum", tipus: "aguda", tonica: "tum" },
-            { paraula: "racó", tipus: "aguda", tonica: "có" },
-            { paraula: "cabdell", tipus: "aguda", tonica: "dell" },
-            { paraula: "Japó", tipus: "aguda", tonica: "pó" },
-
-            // Planes (amb accent)
-            { paraula: "difícil", tipus: "plana", tonica: "fí" },
-            { paraula: "còmic", tipus: "plana", tonica: "cò" },
-            { paraula: "tècnic", tipus: "plana", tonica: "tèc" },
-            { paraula: "càstig", tipus: "plana", tonica: "càs" },
-            { paraula: "fràgil", tipus: "plana", tonica: "frà" },
-            { paraula: "dòlar", tipus: "plana", tonica: "dò" },
-            { paraula: "tòrax", tipus: "plana", tonica: "tò" },
-
-            // Esdrúixoles (sempre amb accent)
-            { paraula: "fàbrica", tipus: "esdrúixola", tonica: "fà" },
-            { paraula: "música", tipus: "esdrúixola", tonica: "mú" },
-            { paraula: "pàgina", tipus: "esdrúixola", tonica: "pà" },
-            { paraula: "plàcida", tipus: "esdrúixola", tonica: "plà" },
-            { paraula: "càmera", tipus: "esdrúixola", tonica: "cà" },
-            { paraula: "lògica", tipus: "esdrúixola", tonica: "lò" },
-            { paraula: "número", tipus: "esdrúixola", tonica: "nú" },
-            { paraula: "matemàtica", tipus: "esdrúixola", tonica: "mà" },
-            { paraula: "mànega", tipus: "esdrúixola", tonica: "mà" }
+            // Esdrúixoles
+            { paraula: "brúixola", tipus: "esdrúixola", tonica: "brú" },
+            { paraula: "síl·laba", tipus: "esdrúixola", tonica: "síl" },
+            { paraula: "tàctica", tipus: "esdrúixola", tonica: "tàc" },
+            { paraula: "làmpada", tipus: "esdrúixola", tonica: "làm" },
+            { paraula: "ànima",   tipus: "esdrúixola", tonica: "àn" },
+            { paraula: "òpera",   tipus: "esdrúixola", tonica: "ò" },
+            { paraula: "pòlissa", tipus: "esdrúixola", tonica: "pòl" },
+            { paraula: "mòmia",   tipus: "esdrúixola", tonica: "mòm" },
+            { paraula: "àrbitre", tipus: "esdrúixola", tonica: "àr" },
+            { paraula: "bíblia",  tipus: "esdrúixola", tonica: "bí" }
         ];
 
         // Estat del joc
-        let paraulesDisponibles = [];
-        let paraulaActual = {};
-        let puntuacio = 0;
-        let vides = 3;
-        let tempsRestant = 10;
-        let intervalTemps;
-        const TEMPS_INICIAL = 10; // Segons
-        const VIDES_INICIALS = 3;
+        var paraulesDisponibles = [];
+        var paraulaActual = null;
+        var puntuacio = 0;
+        var vides = 3;
+        var tempsRestant = 10;
+        var intervalTemps = null;
+        var haGuanyat = false;
 
-        // Referències al DOM
-        const puntuacioDisplay = document.getElementById('puntuacio');
-        const videsContainer = document.getElementById('vides-container');
-        const paraulaContainer = document.getElementById('paraula-container');
-        const barraTempsProgres = document.getElementById('barra-temps-progres');
-        const gameButtons = document.querySelectorAll('.game-btn');
-        const gameOverModal = document.getElementById('game-over-modal');
-        const puntuacioFinalDisplay = document.getElementById('puntuacio-final');
-        const restartBtn = document.getElementById('restart-btn');
+        var TEMPS_INICIAL = 10;        // segons
+        var VIDES_INICIALS = 3;
+        var PUNTUACIO_OBJECTIU = 100;
 
-        // SVG d'un cor
-        const COR_PLE = `<svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>`;
-        const COR_BUIT = `<svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.5l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>`;
+        // DOM
+        var puntuacioDisplay = document.getElementById('puntuacio');
+        var videsContainer = document.getElementById('vides-container');
+        var paraulaContainer = document.getElementById('paraula-container');
+        var barraTempsProgres = document.getElementById('barra-temps-progres');
+        var gameButtons = document.querySelectorAll('.game-btn');
+        var gameOverModal = document.getElementById('game-over-modal');
+        var gameOverTitle = document.getElementById('game-over-title');
+        var puntuacioFinalDisplay = document.getElementById('puntuacio-final');
+        var restartBtn = document.getElementById('restart-btn');
 
-        // Funció per barrejar un array (Fisher-Yates shuffle)
+        var COR_PLE = '<svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>';
+        var COR_BUIT = '<svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.5l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>';
+
+        // Barreja
         function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = array[i];
+                array[i] = array[j];
+                array[j] = tmp;
             }
         }
 
-        // Funció per actualitzar la UI (puntuació i vides)
         function actualitzarUI() {
             puntuacioDisplay.textContent = puntuacio;
-            
+
             videsContainer.innerHTML = '';
-            for (let i = 0; i < VIDES_INICIALS; i++) {
-           
-::contentReference[oaicite:0]{index=0}
+            for (var i = 0; i < VIDES_INICIALS; i++) {
+                if (i < vides) {
+                    videsContainer.innerHTML += COR_PLE;
+                } else {
+                    videsContainer.innerHTML += COR_BUIT;
+                }
+            }
+        }
+
+        function seguentTorn() {
+            paraulaContainer.className = "bg-blue-50 text-blue-800 text-5xl font-bold p-6 rounded-lg mb-6 text-center tracking-wider";
+
+            if (paraulesDisponibles.length === 0) {
+                paraulesDisponibles = BANC_DE_PARAULES.slice();
+                shuffleArray(paraulesDisponibles);
+            }
+
+            paraulaActual = paraulesDisponibles.pop();
+            paraulaContainer.textContent = paraulaActual.paraula;
+
+            tempsRestant = TEMPS_INICIAL;
+            barraTempsProgres.style.width = '100%';
+            barraTempsProgres.className = "bg-green-500 h-4 rounded-full";
+
+            if (intervalTemps) {
+                clearInterval(intervalTemps);
+            }
+            intervalTemps = setInterval(actualitzarTemps, 100);
+
+            for (var i = 0; i < gameButtons.length; i++) {
+                gameButtons[i].disabled = false;
+            }
+        }
+
+        function actualitzarTemps() {
+            tempsRestant -= 0.1;
+            var percentatge = (tempsRestant / TEMPS_INICIAL) * 100;
+            if (percentatge < 0) {
+                percentatge = 0;
+            }
+            barraTempsProgres.style.width = percentatge + '%';
+
+            if (percentatge < 25) {
+                barraTempsProgres.className = "bg-red-500 h-4 rounded-full";
+            } else if (percentatge < 50) {
+                barraTempsProgres.className = "bg-yellow-500 h-4 rounded-full";
+            } else {
+                barraTempsProgres.className = "bg-green-500 h-4 rounded-full";
+            }
+
+            if (tempsRestant <= 0) {
+                clearInterval(intervalTemps);
+                comprovarResposta(null);
+            }
+        }
+
+        function comprovarResposta(respostaUsuari) {
+            if (intervalTemps) {
+                clearInterval(intervalTemps);
+            }
+            for (var i = 0; i < gameButtons.length; i++) {
+                gameButtons[i].disabled = true;
+            }
+
+            if (tempsRestant < 0) {
+                tempsRestant = 0;
+            }
+
+            var esCorrecte = (respostaUsuari === paraulaActual.tipus);
+
+            if (esCorrecte) {
+                // Criteri invers: com més temps resta, més punts
+                var puntsPregunta = Math.max(1, Math.round(tempsRestant * 5));
+                puntuacio += puntsPregunta;
+
+                paraulaContainer.className += " flash-correct bg-green-50";
+
+                setTimeout(function () {
+                    actualitzarUI();
+                    if (puntuacio >= PUNTUACIO_OBJECTIU) {
+                        haGuanyat = true;
+                        gameOver();
+                    } else {
+                        seguentTorn();
+                    }
+                }, 500);
+
+            } else {
+                vides--;
+                paraulaContainer.className += " shake-error bg-red-100";
+
+                var tipusCorrecte = paraulaActual.tipus.charAt(0).toUpperCase() + paraulaActual.tipus.slice(1);
+                paraulaContainer.textContent = paraulaActual.paraula + " (" + tipusCorrecte + ")";
+
+                setTimeout(function () {
+                    actualitzarUI();
+                    if (vides === 0) {
+                        haGuanyat = false;
+                        gameOver();
+                    } else {
+                        seguentTorn();
+                    }
+                }, 1500);
+            }
+        }
+
+        function gameOver() {
+            if (haGuanyat) {
+                gameOverTitle.textContent = "Felicitats, has guanyat!";
+            } else {
+                gameOverTitle.textContent = "S'ha acabat!";
+            }
+            puntuacioFinalDisplay.textContent = puntuacio;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function iniciarJoc() {
+            puntuacio = 0;
+            vides = VIDES_INICIALS;
+            haGuanyat = false;
+
+            paraulesDisponibles = BANC_DE_PARAULES.slice();
+            shuffleArray(paraulesDisponibles);
+
+            actualitzarUI();
+            gameOverModal.classList.add('hidden');
+            seguentTorn();
+        }
+
+        // Esdeveniments
+        document.getElementById('aguda-btn').addEventListener('click', function () {
+            comprovarResposta('aguda');
+        });
+        document.getElementById('plana-btn').addEventListener('click', function () {
+            comprovarResposta('plana');
+        });
+        document.getElementById('esdrúixola-btn').addEventListener('click', function () {
+            comprovarResposta('esdrúixola');
+        });
+        restartBtn.addEventListener('click', function () {
+            iniciarJoc();
+        });
+
+        window.onload = function () {
+            iniciarJoc();
+        };
+    </script>
+</body>
+</html>
