@@ -53,7 +53,7 @@
         </div>
 
         <!-- Contenidor de la paraula (amb feedback visual) -->
-        <div id="paraula-container" class="bg-blue-50 text-blue-800 text-5xl font-bold p-6 rounded-lg mb-6 text-center tracking-wider" id="paraula-display">
+        <div id="paraula-container" class="bg-blue-50 text-blue-800 text-5xl font-bold p-6 rounded-lg mb-6 text-center tracking-wider">
             <!-- La paraula apareixerà aquí -->
         </div>
 
@@ -164,7 +164,6 @@
         const puntuacioDisplay = document.getElementById('puntuacio');
         const videsContainer = document.getElementById('vides-container');
         const paraulaContainer = document.getElementById('paraula-container');
-        const paraulaDisplay = document.getElementById('paraula-display');
         const barraTempsProgres = document.getElementById('barra-temps-progres');
         const gameButtons = document.querySelectorAll('.game-btn');
         const gameOverModal = document.getElementById('game-over-modal');
@@ -189,125 +188,5 @@
             
             videsContainer.innerHTML = '';
             for (let i = 0; i < VIDES_INICIALS; i++) {
-                videsContainer.innerHTML += (i < vides) ? COR_PLE : COR_BUIT;
-            }
-        }
-
-        // Funció per començar un nou torn
-        function seguentTorn() {
-            // Netejar efectes visuals anteriors
-            paraulaContainer.classList.remove('shake-error', 'flash-correct', 'bg-red-100', 'bg-green-50');
-            paraulaContainer.classList.add('bg-blue-50');
-
-            // Si hem esgotat les paraules, tornem a barrejar
-            if (paraulesDisponibles.length === 0) {
-                paraulesDisponibles = [...BANC_DE_PARAULES];
-                shuffleArray(paraulesDisponibles);
-            }
-
-            // Obtenim una paraula
-            paraulaActual = paraulesDisponibles.pop();
-            paraulaContainer.textContent = paraulaActual.paraula;
-
-            // Restablim el temps
-            tempsRestant = TEMPS_INICIAL;
-            barraTempsProgres.style.width = '100%';
-            barraTempsProgres.classList.remove('bg-yellow-500', 'bg-red-500');
-            barraTempsProgres.classList.add('bg-green-500');
-            
-            // Netejem l'interval anterior i en comencem un de nou
-            clearInterval(intervalTemps);
-            intervalTemps = setInterval(actualitzarTemps, 100); // Més fluid (10 cops/segon)
-
-            // Activem els botons
-            gameButtons.forEach(btn => btn.disabled = false);
-        }
-
-        // Funció per actualitzar el temps
-        function actualitzarTemps() {
-            tempsRestant -= 0.1;
-            let percentatge = (tempsRestant / TEMPS_INICIAL) * 100;
-            barraTempsProgres.style.width = `${percentatge}%`;
-
-            // Canviem color de la barra segons el temps
-            if (percentatge < 25) {
-                barraTempsProgres.classList.remove('bg-green-500', 'bg-yellow-500');
-                barraTempsProgres.classList.add('bg-red-500');
-            } else if (percentatge < 50) {
-                barraTempsProgres.classList.remove('bg-green-500', 'bg-red-500');
-                barraTempsProgres.classList.add('bg-yellow-500');
-            }
-
-            if (tempsRestant <= 0) {
-                clearInterval(intervalTemps);
-                comprovarResposta(null); // S'ha acabat el temps
-            }
-        }
-
-        // Funció per comprovar la resposta
-        function comprovarResposta(respostaUsuari) {
-            clearInterval(intervalTemps);
-            gameButtons.forEach(btn => btn.disabled = true);
-
-            const esCorrecte = (respostaUsuari === paraulaActual.tipus);
-
-            if (esCorrecte) {
-                puntuacio += 10;
-                paraulaContainer.classList.remove('bg-blue-50');
-                paraulaContainer.classList.add('flash-correct', 'bg-green-50');
-                // Esperem un moment i passem al següent torn
-                setTimeout(() => {
-                    actualitzarUI();
-                    seguentTorn();
-                }, 500);
-            } else {
-                vides--;
-                paraulaContainer.classList.remove('bg-blue-50');
-                paraulaContainer.classList.add('shake-error', 'bg-red-100');
-                
-                // Mostrem la resposta correcta
-                let tipusCorrecte = paraulaActual.tipus.charAt(0).toUpperCase() + paraulaActual.tipus.slice(1);
-                paraulaContainer.textContent = `${paraulaActual.paraula} (${tipusCorrecte})`;
-
-                // Esperem un moment i mirem si s'ha acabat el joc
-                setTimeout(() => {
-                    actualitzarUI();
-                    if (vides === 0) {
-                        gameOver();
-                    } else {
-                        seguentTorn();
-                    }
-                }, 1500); // Més temps per veure l'error
-            }
-        }
-
-        // Funció de Game Over
-        function gameOver() {
-            puntuacioFinalDisplay.textContent = puntuacio;
-            gameOverModal.classList.remove('hidden');
-        }
-
-        // Funció per iniciar/reiniciar el joc
-        function iniciarJoc() {
-            puntuacio = 0;
-            vides = VIDES_INICIALS;
-            paraulesDisponibles = [];
-            
-            actualitzarUI();
-            seguentTorn();
-            
-            gameOverModal.classList.add('hidden');
-        }
-
-        // Assignem els esdeveniments
-        document.getElementById('aguda-btn').addEventListener('click', () => comprovarResposta('aguda'));
-        document.getElementById('plana-btn').addEventListener('click', () => comprovarResposta('plana'));
-        document.getElementById('esdrúixola-btn').addEventListener('click', () => comprovarResposta('esdrúixola'));
-        restartBtn.addEventListener('click', iniciarJoc);
-
-        // Comencem el joc
-        window.onload = iniciarJoc;
-
-    </script>
-</body>
-</html>
+           
+::contentReference[oaicite:0]{index=0}
