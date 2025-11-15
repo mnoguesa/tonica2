@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pràctica d'accentuació</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+
+        <!-- Títol i instruccions -->
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">Pràctica d'accentuació</h1>
+        <p class="text-sm text-slate-500 mb-6">
+            Classifica la paraula següent com a aguda, plana o esdrúixola.
+        </p>
+
+        <!-- Paraula -->
+        <div
+            id="word-display"
+            class="bg-slate-100 p-6 rounded-lg text-4xl font-bold text-indigo-700 mb-6 tracking-wider min-h-[80px] flex items-center justify-center">
+        </div>
+
+        <!-- Botons -->
+        <div class="flex flex-col space-y-3">
+            <button id="aguda-btn"
+                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                Aguda
+            </button>
+            <button id="plana-btn"
+                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-green-600 hover:bg-green-700 disabled:opacity-50">
+                Plana
+            </button>
+            <button id="esdruixola-btn"
+                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-purple-600 hover:bg-purple-700 disabled:opacity-50">
+                Esdrúixola
+            </button>
+        </div>
+
+        <!-- Feedback -->
+        <div id="feedback-message" class="mt-4 h-6 font-medium text-lg"></div>
+
+        <!-- Següent -->
+        <button id="next-word-button"
+                class="w-full p-3 rounded-lg bg-slate-700 text-white font-semibold mt-4 hover:bg-slate-800 hidden">
+            Següent paraula
+        </button>
+
+        <!-- Marcador -->
+        <div class="mt-6 pt-6 border-t border-slate-200 flex justify-around text-slate-600">
+            <div>
+                <span class="text-sm font-medium block">ENCERTS</span>
+                <span id="correct-score" class="text-2xl font-bold">0</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium block">INTENTS</span>
+                <span id="total-attempts" class="text-2xl font-bold">0</span>
+            </div>
+        </div>
+
+        <p class="mt-4 text-xs text-slate-400">
+            Versió 1.1 – si veus això, tens la darrera versió carregada.
+        </p>
+
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const wordList = [
+            // Agudes
+            { word: "color", type: "aguda" },
+            { word: "paper", type: "aguda" },
+            { word: "motor", type: "aguda" },
+            { word: "cantar", type: "aguda" },
+            { word: "animal", type: "aguda" },
+            { word: "Berlín", type: "aguda" },
+            { word: "París", type: "aguda" },
+            { word: "cafè", type: "aguda" },
+            { word: "camí", type: "aguda" },
+            { word: "matalàs", type: "aguda" },
+            { word: "carrer", type: "aguda" },
+            { word: "mercat", type: "aguda" },
+
+            // Planes
+            { word: "casa", type: "plana" },
+            { word: "poma", type: "plana" },
+            { word: "arbre", type: "plana" },
+            { word: "llibre", type: "plana" },
+            { word: "persona", type: "plana" },
+            { word: "marge", type: "plana" },
+            { word: "plàtan", type: "plana" },
+            { word: "rètol", type: "plana" },
+            { word: "tomàquet", type: "plana" },
+            { word: "problema", type: "plana" },
+            { word: "sistema", type: "plana" },
+            { word: "mòbil", type: "plana" },
+            { word: "telèfon", type: "plana" },
+            { word: "semàfor", type: "plana" },
+
+            // Esdrúixoles
+            { word: "música", type: "esdrúixola" },
+            { word: "pàgina", type: "esdrúixola" },
+            { word: "màquina", type: "esdrúixola" },
+            { word: "càmera", type: "esdrúixola" },
+            { word: "piràmide", type: "esdrúixola" },
+            { word: "lògica", type: "esdrúixola" },
+            { word: "fàbrica", type: "esdrúixola" },
+            { word: "Amèrica", type: "esdrúixola" },
+            { word: "síl·laba", type: "esdrúixola" },
+            { word: "època", type: "esdrúixola" }
+        ];
+
+        let correctScore = 0;
+        let totalAttempts = 0;
+        let currentWord = null;
+        let answered = false;
+
+        const wordDisplayEl = document.getElementById("word-display");
+        const feedbackEl = document.getElementById("feedback-message");
+        const correctScoreEl = document.getElementById("correct-score");
+        const totalAttemptsEl = document.getElementById("total-attempts");
+        const agudaBtn = document.getElementById("aguda-btn");
+        const planaBtn = document.getElementById("plana-btn");
+        const esdruixolaBtn = document.getElementById("esdruixola-btn");
+        const nextWordBtn = document.getElementById("next-word-button");
+        const choiceButtons = [agudaBtn, planaBtn, esdruixolaBtn];
+
+        function showNewWord() {
+            const randomIndex = Math.floor(Math.random() * wordList.length);
+            currentWord = wordList[randomIndex];
+
+            wordDisplayEl.textContent = currentWord.word;
+            answered = false;
+            feedbackEl.textContent = "";
+            feedbackEl.className = "mt-4 h-6 font-medium text-lg";
+            nextWordBtn.classList.add("hidden");
+            choiceButtons.forEach(btn => btn.disabled = false);
+        }
+
+        function checkAnswer(choice) {
+            if (answered) return;
+
+            answered = true;
+            totalAttempts++;
+
+            if (choice === currentWord.type) {
+                correctScore++;
+                feedbackEl.textContent = "Correcte!";
+                feedbackEl.className = "mt-4 h-6 font-medium text-lg text-green-600";
+            } else {
+                let textType = currentWord.type;
+                if (textType === "aguda") textType = "una paraula aguda";
+                if (textType === "plana") textType = "una paraula plana";
+                if (textType === "esdrúixola") textType = "una paraula esdrúixola";
+                feedbackEl.textContent = `Incorrecte. És ${textType}.`;
+                feedbackEl.className = "mt-4 h-6 font-medium text-lg text-red-600";
+            }
+
+            correctScoreEl.textContent = correctScore;
+            totalAttemptsEl.textContent = totalAttempts;
+
+            choiceButtons.forEach(btn => btn.disabled = true);
+            nextWordBtn.classList.remove("hidden");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            agudaBtn.addEventListener("click", () => checkAnswer("aguda"));
+            planaBtn.addEventListener("click", () => checkAnswer("plana"));
+            esdruixolaBtn.addEventListener("click", () => checkAnswer("esdrúixola"));
+            nextWordBtn.addEventListener("click", showNewWord);
+            showNewWord();
+        });
+    </script>
+
+</body>
+</html>
