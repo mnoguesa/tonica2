@@ -1,186 +1,313 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pràctica d'accentuació</title>
-
-    <!-- Tailwind CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursa d'Accents</title>
+    <!-- Carreguem Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
+        /* Tipografia Inter per defecte */
         body {
-            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: "Inter", sans-serif;
+            overflow: hidden; /* Evita scroll en mòbils */
+        }
+        /* Animació per la barra de temps */
+        #barra-temps-progres {
+            transition: width 0.1s linear;
+        }
+        /* Efecte de "shake" per error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-error {
+            animation: shake 0.5s ease-in-out;
+        }
+        /* Efecte de "flash" per correcte */
+        @keyframes flash-correct {
+            0% { background-color: #ecfdf5; } /* green-50 */
+            50% { background-color: #d1fae5; } /* green-200 */
+            100% { background-color: #ecfdf5; } /* green-50 */
+        }
+        .flash-correct {
+            animation: flash-correct 0.5s ease-in-out;
         }
     </style>
 </head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
-
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-
-        <!-- Títol i instruccions -->
-        <h1 class="text-2xl font-bold text-slate-800 mb-2">Pràctica d'accentuació</h1>
-        <p class="text-sm text-slate-500 mb-6">
-            Classifica la paraula següent com a aguda, plana o esdrúixola.
-        </p>
-
-        <!-- Paraula -->
-        <div
-            id="word-display"
-            class="bg-slate-100 p-6 rounded-lg text-4xl font-bold text-indigo-700 mb-6 tracking-wider min-h-[80px] flex items-center justify-center">
+    <!-- Contingut principal del joc -->
+    <div id="game-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-md relative">
+        
+        <!-- Marcador (Puntuació i Vides) -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <span class="text-lg font-semibold text-gray-600">Puntuació</span>
+                <span id="puntuacio" class="text-2xl font-bold text-blue-700 ml-2">0</span>
+            </div>
+            <div id="vides-container" class="flex gap-2">
+                <!-- Les vides (cors) s'afegiran aquí amb JS -->
+            </div>
         </div>
 
-        <!-- Botons -->
-        <div class="flex flex-col space-y-3">
-            <button id="aguda-btn"
-                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+        <!-- Contenidor de la paraula (amb feedback visual) -->
+        <div id="paraula-container" class="bg-blue-50 text-blue-800 text-5xl font-bold p-6 rounded-lg mb-6 text-center tracking-wider" id="paraula-display">
+            <!-- La paraula apareixerà aquí -->
+        </div>
+
+        <!-- Barra de temps -->
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-6 overflow-hidden">
+            <div id="barra-temps-progres" class="bg-green-500 h-4 rounded-full" style="width: 100%;"></div>
+        </div>
+
+        <!-- Botons d'opcions -->
+        <div class="grid grid-cols-3 gap-3">
+            <button id="aguda-btn" class="game-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Aguda
             </button>
-            <button id="plana-btn"
-                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-green-600 hover:bg-green-700 disabled:opacity-50">
+            <button id="plana-btn" class="game-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Plana
             </button>
-            <button id="esdruixola-btn"
-                    class="w-full p-3 rounded-lg text-white font-semibold transition-colors bg-purple-600 hover:bg-purple-700 disabled:opacity-50">
+            <button id="esdrúixola-btn" class="game-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Esdrúixola
             </button>
         </div>
 
-        <!-- Feedback -->
-        <div id="feedback-message" class="mt-4 h-6 font-medium text-lg"></div>
-
-        <!-- Següent -->
-        <button id="next-word-button"
-                class="w-full p-3 rounded-lg bg-slate-700 text-white font-semibold mt-4 hover:bg-slate-800 hidden">
-            Següent paraula
-        </button>
-
-        <!-- Marcador -->
-        <div class="mt-6 pt-6 border-t border-slate-200 flex justify-around text-slate-600">
-            <div>
-                <span class="text-sm font-medium block">ENCERTS</span>
-                <span id="correct-score" class="text-2xl font-bold">0</span>
-            </div>
-            <div>
-                <span class="text-sm font-medium block">INTENTS</span>
-                <span id="total-attempts" class="text-2xl font-bold">0</span>
-            </div>
-        </div>
-
-        <p class="mt-4 text-xs text-slate-400">
-            Versió 1.1 – si veus això, tens la darrera versió carregada.
-        </p>
-
     </div>
 
-    <!-- SCRIPT -->
+    <!-- Modal de Game Over (inicialment ocult) -->
+    <div id="game-over-modal" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 md:p-12 w-full max-w-md text-center">
+            <h2 class="text-4xl font-bold text-red-600 mb-4">S'ha acabat!</h2>
+            <p class="text-xl text-gray-700 mb-6">La teva puntuació final és:</p>
+            <span id="puntuacio-final" class="text-7xl font-bold text-blue-700 mb-8 block">0</span>
+            <button id="restart-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 text-lg">
+                Tornar a començar
+            </button>
+        </div>
+    </div>
+
+
     <script>
-        const wordList = [
-            // Agudes
-            { word: "color", type: "aguda" },
-            { word: "paper", type: "aguda" },
-            { word: "motor", type: "aguda" },
-            { word: "cantar", type: "aguda" },
-            { word: "animal", type: "aguda" },
-            { word: "Berlín", type: "aguda" },
-            { word: "París", type: "aguda" },
-            { word: "cafè", type: "aguda" },
-            { word: "camí", type: "aguda" },
-            { word: "matalàs", type: "aguda" },
-            { word: "carrer", type: "aguda" },
-            { word: "mercat", type: "aguda" },
+        // Llista de paraules CUIDADOSAMENT seleccionades sense diftongs ni hiats.
+        // { paraula: "text", tipus: "aguda/plana/esdrúixola", tonica: "síl·laba tònica" }
+        const BANC_DE_PARAULES = [
+            // Planes (sense accent)
+            { paraula: "casa", tipus: "plana", tonica: "ca" },
+            { paraula: "mesa", tipus: "plana", tonica: "me" },
+            { paraula: "taca", tipus: "plana", tonica: "ta" },
+            { paraula: "cotxe", tipus: "plana", tonica: "cot" },
+            { paraula: "data", tipus: "plana", tonica: "da" },
+            { paraula: "bonica", tipus: "plana", tonica: "ni" },
+            { paraula: "sistema", tipus: "plana", tonica: "te" },
+            { paraula: "problema", tipus: "plana", tonica: "ble" },
+            { paraula: "llarga", tipus: "plana", tonica: "llar" },
+            { paraula: "finestra", tipus: "plana", tonica: "nes" },
+            { paraula: "pastanaga", tipus: "plana", tonica: "na" },
+            { paraula: "tomàquet", tipus: "plana", tonica: "mà" },
 
-            // Planes
-            { word: "casa", type: "plana" },
-            { word: "poma", type: "plana" },
-            { word: "arbre", type: "plana" },
-            { word: "llibre", type: "plana" },
-            { word: "persona", type: "plana" },
-            { word: "marge", type: "plana" },
-            { word: "plàtan", type: "plana" },
-            { word: "rètol", type: "plana" },
-            { word: "tomàquet", type: "plana" },
-            { word: "problema", type: "plana" },
-            { word: "sistema", type: "plana" },
-            { word: "mòbil", type: "plana" },
-            { word: "telèfon", type: "plana" },
-            { word: "semàfor", type: "plana" },
+            // Agudes (sense accent)
+            { paraula: "paper", tipus: "aguda", tonica: "per" },
+            { paraula: "color", tipus: "aguda", tonica: "lor" },
+            { paraula: "calor", tipus: "aguda", tonica: "lor" },
+            { paraula: "valor", tipus: "aguda", tonica: "lor" },
+            { paraula: "motor", tipus: "aguda", tonica: "tor" },
+            { paraula: "camall", tipus: "aguda", tonica: "mall" },
+            { paraula: "cantar", tipus: "aguda", tonica: "tar" },
+            { paraula: "penjar", tipus: "aguda", tonica: "jar" },
+            { paraula: "treball", tipus: "aguda", tonica: "ball" },
 
-            // Esdrúixoles
-            { word: "música", type: "esdrúixola" },
-            { word: "pàgina", type: "esdrúixola" },
-            { word: "màquina", type: "esdrúixola" },
-            { word: "càmera", type: "esdrúixola" },
-            { word: "piràmide", type: "esdrúixola" },
-            { word: "lògica", type: "esdrúixola" },
-            { word: "fàbrica", type: "esdrúixola" },
-            { word: "Amèrica", type: "esdrúixola" },
-            { word: "síl·laba", type: "esdrúixola" },
-            { word: "època", type: "esdrúixola" }
+            // Agudes (amb accent)
+            { paraula: "camí", tipus: "aguda", tonica: "mí" },
+            { paraula: "sofà", tipus: "aguda", tonica: "fà" },
+            { paraula: "carbó", tipus: "aguda", tonica: "bó" },
+            { paraula: "matí", tipus: "aguda", tonica: "tí" },
+            { paraula: "betum", tipus: "aguda", tonica: "tum" },
+            { paraula: "racó", tipus: "aguda", tonica: "có" },
+            { paraula: "cabdell", tipus: "aguda", tonica: "dell" },
+            { paraula: "Japó", tipus: "aguda", tonica: "pó" },
+
+            // Planes (amb accent)
+            { paraula: "difícil", tipus: "plana", tonica: "fí" },
+            { paraula: "còmic", tipus: "plana", tonica: "cò" },
+            { paraula: "tècnic", tipus: "plana", tonica: "tèc" },
+            { paraula: "càstig", tipus: "plana", tonica: "càs" },
+            { paraula: "fràgil", tipus: "plana", tonica: "frà" },
+            { paraula: "dòlar", tipus: "plana", tonica: "dò" },
+            { paraula: "tòrax", tipus: "plana", tonica: "tò" },
+
+            // Esdrúixoles (sempre amb accent)
+            { paraula: "fàbrica", tipus: "esdrúixola", tonica: "fà" },
+            { paraula: "música", tipus: "esdrúixola", tonica: "mú" },
+            { paraula: "pàgina", tipus: "esdrúixola", tonica: "pà" },
+            { paraula: "plàcida", tipus: "esdrúixola", tonica: "plà" },
+            { paraula: "càmera", tipus: "esdrúixola", tonica: "cà" },
+            { paraula: "lògica", tipus: "esdrúixola", tonica: "lò" },
+            { paraula: "número", tipus: "esdrúixola", tonica: "nú" },
+            { paraula: "matemàtica", tipus: "esdrúixola", tonica: "mà" },
+            { paraula: "mànega", tipus: "esdrúixola", tonica: "mà" }
         ];
 
-        let correctScore = 0;
-        let totalAttempts = 0;
-        let currentWord = null;
-        let answered = false;
+        // Estat del joc
+        let paraulesDisponibles = [];
+        let paraulaActual = {};
+        let puntuacio = 0;
+        let vides = 3;
+        let tempsRestant = 10;
+        let intervalTemps;
+        const TEMPS_INICIAL = 10; // Segons
+        const VIDES_INICIALS = 3;
 
-        const wordDisplayEl = document.getElementById("word-display");
-        const feedbackEl = document.getElementById("feedback-message");
-        const correctScoreEl = document.getElementById("correct-score");
-        const totalAttemptsEl = document.getElementById("total-attempts");
-        const agudaBtn = document.getElementById("aguda-btn");
-        const planaBtn = document.getElementById("plana-btn");
-        const esdruixolaBtn = document.getElementById("esdruixola-btn");
-        const nextWordBtn = document.getElementById("next-word-button");
-        const choiceButtons = [agudaBtn, planaBtn, esdruixolaBtn];
+        // Referències al DOM
+        const puntuacioDisplay = document.getElementById('puntuacio');
+        const videsContainer = document.getElementById('vides-container');
+        const paraulaContainer = document.getElementById('paraula-container');
+        const paraulaDisplay = document.getElementById('paraula-display');
+        const barraTempsProgres = document.getElementById('barra-temps-progres');
+        const gameButtons = document.querySelectorAll('.game-btn');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const puntuacioFinalDisplay = document.getElementById('puntuacio-final');
+        const restartBtn = document.getElementById('restart-btn');
 
-        function showNewWord() {
-            const randomIndex = Math.floor(Math.random() * wordList.length);
-            currentWord = wordList[randomIndex];
+        // SVG d'un cor
+        const COR_PLE = `<svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>`;
+        const COR_BUIT = `<svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.5l-7.682-7.682a4.5 4.5 0 010-6.364z"></path></svg>`;
 
-            wordDisplayEl.textContent = currentWord.word;
-            answered = false;
-            feedbackEl.textContent = "";
-            feedbackEl.className = "mt-4 h-6 font-medium text-lg";
-            nextWordBtn.classList.add("hidden");
-            choiceButtons.forEach(btn => btn.disabled = false);
+        // Funció per barrejar un array (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
         }
 
-        function checkAnswer(choice) {
-            if (answered) return;
+        // Funció per actualitzar la UI (puntuació i vides)
+        function actualitzarUI() {
+            puntuacioDisplay.textContent = puntuacio;
+            
+            videsContainer.innerHTML = '';
+            for (let i = 0; i < VIDES_INICIALS; i++) {
+                videsContainer.innerHTML += (i < vides) ? COR_PLE : COR_BUIT;
+            }
+        }
 
-            answered = true;
-            totalAttempts++;
+        // Funció per començar un nou torn
+        function seguentTorn() {
+            // Netejar efectes visuals anteriors
+            paraulaContainer.classList.remove('shake-error', 'flash-correct', 'bg-red-100', 'bg-green-50');
+            paraulaContainer.classList.add('bg-blue-50');
 
-            if (choice === currentWord.type) {
-                correctScore++;
-                feedbackEl.textContent = "Correcte!";
-                feedbackEl.className = "mt-4 h-6 font-medium text-lg text-green-600";
-            } else {
-                let textType = currentWord.type;
-                if (textType === "aguda") textType = "una paraula aguda";
-                if (textType === "plana") textType = "una paraula plana";
-                if (textType === "esdrúixola") textType = "una paraula esdrúixola";
-                feedbackEl.textContent = `Incorrecte. És ${textType}.`;
-                feedbackEl.className = "mt-4 h-6 font-medium text-lg text-red-600";
+            // Si hem esgotat les paraules, tornem a barrejar
+            if (paraulesDisponibles.length === 0) {
+                paraulesDisponibles = [...BANC_DE_PARAULES];
+                shuffleArray(paraulesDisponibles);
             }
 
-            correctScoreEl.textContent = correctScore;
-            totalAttemptsEl.textContent = totalAttempts;
+            // Obtenim una paraula
+            paraulaActual = paraulesDisponibles.pop();
+            paraulaContainer.textContent = paraulaActual.paraula;
 
-            choiceButtons.forEach(btn => btn.disabled = true);
-            nextWordBtn.classList.remove("hidden");
+            // Restablim el temps
+            tempsRestant = TEMPS_INICIAL;
+            barraTempsProgres.style.width = '100%';
+            barraTempsProgres.classList.remove('bg-yellow-500', 'bg-red-500');
+            barraTempsProgres.classList.add('bg-green-500');
+            
+            // Netejem l'interval anterior i en comencem un de nou
+            clearInterval(intervalTemps);
+            intervalTemps = setInterval(actualitzarTemps, 100); // Més fluid (10 cops/segon)
+
+            // Activem els botons
+            gameButtons.forEach(btn => btn.disabled = false);
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            agudaBtn.addEventListener("click", () => checkAnswer("aguda"));
-            planaBtn.addEventListener("click", () => checkAnswer("plana"));
-            esdruixolaBtn.addEventListener("click", () => checkAnswer("esdrúixola"));
-            nextWordBtn.addEventListener("click", showNewWord);
-            showNewWord();
-        });
-    </script>
+        // Funció per actualitzar el temps
+        function actualitzarTemps() {
+            tempsRestant -= 0.1;
+            let percentatge = (tempsRestant / TEMPS_INICIAL) * 100;
+            barraTempsProgres.style.width = `${percentatge}%`;
 
+            // Canviem color de la barra segons el temps
+            if (percentatge < 25) {
+                barraTempsProgres.classList.remove('bg-green-500', 'bg-yellow-500');
+                barraTempsProgres.classList.add('bg-red-500');
+            } else if (percentatge < 50) {
+                barraTempsProgres.classList.remove('bg-green-500', 'bg-red-500');
+                barraTempsProgres.classList.add('bg-yellow-500');
+            }
+
+            if (tempsRestant <= 0) {
+                clearInterval(intervalTemps);
+                comprovarResposta(null); // S'ha acabat el temps
+            }
+        }
+
+        // Funció per comprovar la resposta
+        function comprovarResposta(respostaUsuari) {
+            clearInterval(intervalTemps);
+            gameButtons.forEach(btn => btn.disabled = true);
+
+            const esCorrecte = (respostaUsuari === paraulaActual.tipus);
+
+            if (esCorrecte) {
+                puntuacio += 10;
+                paraulaContainer.classList.remove('bg-blue-50');
+                paraulaContainer.classList.add('flash-correct', 'bg-green-50');
+                // Esperem un moment i passem al següent torn
+                setTimeout(() => {
+                    actualitzarUI();
+                    seguentTorn();
+                }, 500);
+            } else {
+                vides--;
+                paraulaContainer.classList.remove('bg-blue-50');
+                paraulaContainer.classList.add('shake-error', 'bg-red-100');
+                
+                // Mostrem la resposta correcta
+                let tipusCorrecte = paraulaActual.tipus.charAt(0).toUpperCase() + paraulaActual.tipus.slice(1);
+                paraulaContainer.textContent = `${paraulaActual.paraula} (${tipusCorrecte})`;
+
+                // Esperem un moment i mirem si s'ha acabat el joc
+                setTimeout(() => {
+                    actualitzarUI();
+                    if (vides === 0) {
+                        gameOver();
+                    } else {
+                        seguentTorn();
+                    }
+                }, 1500); // Més temps per veure l'error
+            }
+        }
+
+        // Funció de Game Over
+        function gameOver() {
+            puntuacioFinalDisplay.textContent = puntuacio;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        // Funció per iniciar/reiniciar el joc
+        function iniciarJoc() {
+            puntuacio = 0;
+            vides = VIDES_INICIALS;
+            paraulesDisponibles = [];
+            
+            actualitzarUI();
+            seguentTorn();
+            
+            gameOverModal.classList.add('hidden');
+        }
+
+        // Assignem els esdeveniments
+        document.getElementById('aguda-btn').addEventListener('click', () => comprovarResposta('aguda'));
+        document.getElementById('plana-btn').addEventListener('click', () => comprovarResposta('plana'));
+        document.getElementById('esdrúixola-btn').addEventListener('click', () => comprovarResposta('esdrúixola'));
+        restartBtn.addEventListener('click', iniciarJoc);
+
+        // Comencem el joc
+        window.onload = iniciarJoc;
+
+    </script>
 </body>
 </html>
